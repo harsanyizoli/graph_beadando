@@ -38,6 +38,7 @@ typedef enum Camera_movement {
     RIGHT
 } Camera_movement;
 
-
+pos3 normalize_pos3(pos3 v);
+pos3 cross_pos3(pos3 a, pos3 b);
 
 #endif

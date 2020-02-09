@@ -3,8 +3,12 @@
 
 const float VIEWPORT_RATIO = 16/9.f;
 const float VIEWPORT_ASPECT = 45.f;
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
 
 struct Camera cam;
+int mouse_x = WINDOW_WIDTH / 2;
+int mouse_y = WINDOW_HEIGHT / 2;
 
 void display()
 {
@@ -41,23 +45,39 @@ void keyboard_handler(unsigned char key, int x, int y){
 	case 27:
 		exit(0);
 	}
-	glutPostRedisplay();
+}
+
+int changex, changey;
+int warped = 1;
+void mouse_motion_handler(int x, int y){
+	    changex = x - WINDOW_WIDTH/2;
+	    changey = WINDOW_HEIGHT/2 - y;
+        printf("inputx: %f, inputy: %f\n", x, y);
+        
+        if(changex != 0 || changey != 0){
+
+        printf("mouse_x: %f, mouse_y:%f\n", mouse_x, mouse_y);
+	    mouse_x = x;
+	    mouse_y = y;
+	    process_mouse_movement(&cam, changex, changey);
+        glutWarpPointer(WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2);
+        }
 }
 void reshape(GLsizei width, GLsizei height)
 {
     int x, y, w, h;
-    double ratio;
+    float ratio;
 
-    ratio = (double)width / height;
+    ratio = (float)width / height;
     if (ratio > VIEWPORT_RATIO) {
-        w = (int)((double)height * VIEWPORT_RATIO);
+        w = (int)((float)height * VIEWPORT_RATIO);
         h = height;
         x = (width - w) / 2;
         y = 0;
     }
     else {
         w = width;
-        h = (int)((double)width / VIEWPORT_RATIO);
+        h = (int)((float)width / VIEWPORT_RATIO);
         x = 0;
         y = (height - h) / 2;
     }
@@ -69,6 +89,8 @@ void initialize()
 {
     init_cam(&cam);
     glutKeyboardFunc(keyboard_handler);
+    glutPassiveMotionFunc(mouse_motion_handler);
+    glutSetCursor(GLUT_CURSOR_NONE);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glShadeModel(GL_SMOOTH);
@@ -92,7 +114,7 @@ void initialize()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 10.0);
+    gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 1000.0);
 }
 
 /**
@@ -101,10 +123,10 @@ void initialize()
 int main(int argc, char* argv[])
 {
     glutInit(&argc, argv);
-    glutInitWindowSize(640, 480);     
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);     
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    int window = glutCreateWindow("Square example");
+    int window = glutCreateWindow("best gam ever");
     glutSetWindow(window);
 
     initialize();
