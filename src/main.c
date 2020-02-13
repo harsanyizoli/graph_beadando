@@ -1,5 +1,6 @@
 #include "common.h"
 #include "camera.h"
+#include "util.h"
 
 const float VIEWPORT_RATIO = 16/9.f;
 const float VIEWPORT_ASPECT = 45.f;
@@ -9,9 +10,17 @@ const int WINDOW_HEIGHT = 720;
 struct Camera cam;
 int mouse_x = WINDOW_WIDTH / 2;
 int mouse_y = WINDOW_HEIGHT / 2;
+struct timespec start;
+float last_frame, curr_frame;
+float delta_time;
 
 void display()
-{
+{   
+    curr_frame = get_delta_since_start(start);
+    //printf("run time: %f ", curr_frame);
+    delta_time = curr_frame - last_frame;
+    last_frame = curr_frame;
+    //printf("frame time: %f\n", delta_time);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBegin(GL_POLYGON);
     glColor3f(1.0, 0, 0);
@@ -29,21 +38,24 @@ void display()
 void keyboard_handler(unsigned char key, int x, int y){
     switch (key) {
 	case 'w':
-		process_key(&cam, FORWARD, 0.05f);
+		process_key(&cam, FORWARD, delta_time);
         printf("w\n");
 		break;
 	case 's':
-		process_key(&cam, BACKWARD, 0.05f);
+		process_key(&cam, BACKWARD, delta_time);
         printf("s\n");
 		break;
 	case 'a':
-		process_key(&cam, LEFT, 0.05f);
+		process_key(&cam, LEFT, delta_time);
 		break;
 	case 'd':
-		process_key(&cam, RIGHT, 0.05f);
+		process_key(&cam, RIGHT, delta_time);
 		break;
 	case 27:
 		exit(0);
+        break;
+    case 't':
+        break;
 	}
 }
 
@@ -52,15 +64,12 @@ int warped = 1;
 void mouse_motion_handler(int x, int y){
 	    changex = x - WINDOW_WIDTH/2;
 	    changey = WINDOW_HEIGHT/2 - y;
-        printf("inputx: %f, inputy: %f\n", x, y);
-        
+    
         if(changex != 0 || changey != 0){
-
-        printf("mouse_x: %f, mouse_y:%f\n", mouse_x, mouse_y);
-	    mouse_x = x;
-	    mouse_y = y;
-	    process_mouse_movement(&cam, changex, changey);
-        glutWarpPointer(WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2);
+	        mouse_x = x;
+	        mouse_y = y;
+	        process_mouse_movement(&cam, changex, changey);
+            glutWarpPointer(WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2);
         }
 }
 void reshape(GLsizei width, GLsizei height)
@@ -85,10 +94,16 @@ void reshape(GLsizei width, GLsizei height)
     glViewport (x, y, w, h);
 }
 
+void mouse_handler(int button, int state, int x, int y){
+    printf("mouse button pressed. %d state: %d", button, state);
+}
+
 void initialize()
-{
+{   
+    clock_gettime(CLOCK_REALTIME, &start);
     init_cam(&cam);
     glutKeyboardFunc(keyboard_handler);
+    glutMouseFunc(mouse_handler);
     glutPassiveMotionFunc(mouse_motion_handler);
     glutSetCursor(GLUT_CURSOR_NONE);
     glutDisplayFunc(display);
@@ -130,7 +145,7 @@ int main(int argc, char* argv[])
     glutSetWindow(window);
 
     initialize();
-
+    printf("start ns: %d\n", start.tv_nsec);
     glutMainLoop();
 
     return 0;

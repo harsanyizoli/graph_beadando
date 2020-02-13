@@ -23,9 +23,9 @@ void init_cam(struct Camera* c){
     c->Zoom = 1.0f;
     c->Pitch = 0.0f;
 }
-void process_key(struct Camera* c, Camera_movement direction, float deltaTime)
+void process_key(struct Camera* c, Camera_movement direction, float delta)
 {
-    float velocity = 0.5f;
+    float velocity = c->MovementSpeed * delta;
     if (direction == FORWARD){
         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         c->Position.x += c->Front.x * velocity;
@@ -55,8 +55,8 @@ float degree_to_radian(float degree){
 void set_view_point(const struct Camera* c){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-    printf("lookat position x: %f, y: %f, z: %f\n", c->Position.x, c->Position.y, c->Position.z);
-    printf("looakt front x: %f, y: %f, z: %f\n", c->Front.x, c->Front.y, c->Front.z);
+    //printf("lookat position x: %f, y: %f, z: %f\n", c->Position.x, c->Position.y, c->Position.z);
+    //printf("looakt front x: %f, y: %f, z: %f\n", c->Front.x, c->Front.y, c->Front.z);
 	gluLookAt(
         c->Position.x, c->Position.y, c->Position.z, // eye
         c->Position.x + c->Front.x, c->Position.y + c->Front.y, c->Position.z + c->Front.z, // look at
@@ -69,19 +69,15 @@ void set_view_point(const struct Camera* c){
 
     void process_mouse_movement(struct Camera* c, float xoffset, float yoffset)
     {
-        if(abs(xoffset) >= 20 || abs(yoffset) >= 20){
-            xoffset = 0;
-            yoffset = 0;
-        }
         pos3 f;
-        printf("-------------------\nxoffset: %f, yoffset: %f\n", xoffset, yoffset);
+        //printf("-------------------\nxoffset: %f, yoffset: %f\n", xoffset, yoffset);
 
         xoffset *= c->MouseSensitivity;
         yoffset *= c->MouseSensitivity;
 
         c->Yaw   += xoffset;
         c->Pitch += yoffset;
-        printf("YAW: %f, PITCH: %f\n", c->Yaw, c->Pitch);
+        //printf("YAW: %f, PITCH: %f\n", c->Yaw, c->Pitch);
         if (1)
         {
             if (c->Pitch > 89.9f)
