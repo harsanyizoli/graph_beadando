@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "util.h"
 #include "draw.h"
+#include "world.h"
 
 const float VIEWPORT_RATIO = 16/9.f;
 const float VIEWPORT_ASPECT = 45.f;
@@ -16,7 +17,7 @@ struct timespec start;
 float last_frame, curr_frame;
 float delta_time;
 uint8_t keys_pressed[256];
-Object weapon;
+static struct World world;
 
 void update(){
     //
@@ -119,7 +120,9 @@ void display()
     update();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //objs
-
+    for(int i = 0; i <= world.num_of_objs ; i++){
+        draw_model(world.objects[i].m);
+    }
     glBegin(GL_POLYGON);
     glColor3f(1.0, 0, 0);
     glVertex3d(-0.5, -0.5, 0.0);
@@ -189,15 +192,9 @@ int main(int argc, char* argv[])
 
     initialize();
     initialize_texture("assets/swordtex.png");
-    weapon.m = malloc(sizeof(struct Model));
-    if (load_model("assets/letstry.obj", weapon.m) == TRUE) {
-    	print_model_info(weapon.m);
-        weapon.scale = 0.1f;
-    }
-    else {
-        printf("Unable to load the model!\n");
-    }
-
+    
+    init_world(&world);
+    add_object(&world, "assets/letstry.obj");
     glutMainLoop();
 
     return 0;

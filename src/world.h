@@ -1,11 +1,14 @@
-#if !defined(WOLD_H)
-#define WOLD_H
+#if !defined(WORLD_H)
+#define WORLD_H
 
-#include "common.h"
-
-typedef struct World {
+struct World
+{
+    int size;
     Object* objects;
-    unsigned int width, height;
-} World;
+    int num_of_objs;
+};
 
-#endif // WOLD_H
+void init_world(struct World* w);
+void add_object(struct World* w, const char* filename);
+
+#endif // WORLD_H
