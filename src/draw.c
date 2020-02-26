@@ -8,9 +8,9 @@ void draw_triangles(const struct Model* model)
 {
     int i, k;
     int vertex_index, texture_index, normal_index;
-    double x, y, z, u, v;
+    double x, y, z, normal_x, normal_y, normal_z, u, v;
 
-	glBegin(GL_TRIANGLES);
+    glBegin(GL_TRIANGLES);
 
     for (i = 0; i < model->n_triangles; ++i) {
         for (k = 0; k < 3; ++k) {
@@ -18,8 +18,13 @@ void draw_triangles(const struct Model* model)
             texture_index = model->triangles[i].points[k].texture_index;
             u = model->texture_vertices[texture_index].u;
             v = model->texture_vertices[texture_index].v;
-            // NOTE: The 1-v is model file specific!
             glTexCoord2f(u, 1-v);
+
+            normal_index = model->triangles[i].points[k].normal_index;
+            normal_x = model->normals[normal_index].x;
+            normal_y = model->normals[normal_index].y;
+            normal_z = model->normals[normal_index].z;
+            glNormal3d(normal_x, normal_y, normal_z);
 
             vertex_index = model->triangles[i].points[k].vertex_index;
             x = model->vertices[vertex_index].x;
@@ -27,9 +32,31 @@ void draw_triangles(const struct Model* model)
             z = model->vertices[vertex_index].z;
             glVertex3d(x, y, z);
         }
-    }    
+    }
 
     glEnd();
+}
+
+void draw_normals(const struct Model* model, double length)
+{
+	int i;
+	double x1, y1, z1, x2, y2, z2;
+
+	glColor3f(0, 0, 1);
+
+	glBegin(GL_LINES);
+
+	for (i = 0; i < model->n_vertices; ++i) {
+		x1 = model->vertices[i].x;
+		y1 = model->vertices[i].y;
+		z1 = model->vertices[i].z;
+		x2 = x1 + model->normals[i].x * length;
+		y2 = y1 + model->normals[i].y * length;
+		z2 = z1 + model->normals[i].z * length;
+		glVertex3d(x1, y1, z1);
+		glVertex3d(x2, y2, z2);
+	}
+	glEnd();
 }
 
 void draw_quads(const struct Model* model)
@@ -69,12 +96,13 @@ void draw_model(const struct Model* model)
 void draw_obj(const Object* obj){
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    glScalef(obj->scale, obj->scale, obj->scale);
-    glRotatef(obj->rotatex, 1.0f, 0.0f, 0.0f);
+    glTranslatef(obj->position.x, obj->position.y, obj->position.z);
+    glRotatef(obj->rotatex, 1.0, 0.0f, 0.0f);
     glRotatef(obj->rotatey, 0.0f, 1.0f, 0.0f);
     glRotatef(obj->rotatez, 0.0f, 0.0f, 1.0f);
-    glTranslatef(obj->position.x, obj->position.y, obj->position.z);
+    glScalef(obj->scale, obj->scale, obj->scale);
     draw_triangles(obj->m);
     draw_quads(obj->m);
     glPopMatrix();
 }
+

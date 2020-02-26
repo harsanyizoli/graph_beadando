@@ -39,8 +39,14 @@ typedef GLubyte Pixel[3];
 
 typedef struct Object {
     Model* m;
+    Pixel* image;
+    GLuint texture;
     pos3 position;
     float rotatex, rotatey, rotatez;
     float scale;
+    char name[64];
 } Object;
+
+GLuint load_texture(char* filename, Pixel* image);
+
 #endif

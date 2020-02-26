@@ -6,7 +6,7 @@
     }*/
 void init_cam(struct Camera* c){
     c->Position.x = 0.0f;
-    c->Position.y = 0.25f;
+    c->Position.y = 2.0f;
     c->Position.z = -3.0f;
     c->Front.x = 0.0f;
     c->Front.y = 0.0f;
