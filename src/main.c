@@ -34,10 +34,13 @@ uint8_t nohit = 0;
 Model m_car;
 Pixel* car_img;
 GLuint car_tex;
+Pixel* help_img;
+GLuint help_tex;
+uint8_t help = 0;
 
 void initialize();
 void update(float dt);
-
+void specialFunc(int key, int x, int y);
 void update(float dt){
     player_pos = add_vec3f(cam.Position, mult_vec3f(cam.Front, 2.0f));
     vec3f pp = {player_pos.x, 0.0f, player_pos.z};
@@ -83,6 +86,7 @@ int main(int argc, char *argv[])
     ball_tex = load_texture("assets/ehe.png", ball_image);
     load_model("assets/red.obj", &m_car);
     //scale_model(&m_car, 0.5f, 0.5f, 0.5f);
+    help_tex = load_texture("assets/help.png", help_img);
     car_tex = load_texture("assets/red.png", car_img);
     glutMainLoop();
     return 0;
@@ -180,13 +184,19 @@ void reshape(GLsizei width, GLsizei height)
 
 void display()
 {   
+    if(help == 1){
+        draw_help();
+    } else {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 1000.0);
     curr_frame = get_delta_since_start(start);
     //printf("run time: %f ", curr_frame);
     delta_time = curr_frame - last_frame;
     last_frame = curr_frame;
     //printf("ball %f %f %f\nplayer%f %f %f", ball_pos.x, ball_pos.y, ball_pos.z, player_pos.x, player_pos.y, player_pos.z);
     update(delta_time);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
     set_view_point(&cam);
@@ -260,6 +270,7 @@ void display()
         draw_model(&m_car);
         glDisable(GL_TEXTURE_2D);
     glutSwapBuffers();
+    }
 }
 void initialize()
 {   
@@ -273,7 +284,9 @@ void initialize()
     glutPassiveMotionFunc(mouse_motion_handler);
     glutSetCursor(GLUT_CURSOR_NONE);
     glutDisplayFunc(display);
+    glutIdleFunc(idle);
     glutReshapeFunc(reshape);
+    glutSpecialFunc(specialFunc);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_NORMALIZE);
     glEnable(GL_AUTO_NORMAL);
@@ -286,4 +299,43 @@ void initialize()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 1000.0);
+}
+
+void specialFunc(int key, int x, int y){
+    printf("%d", key);
+    if(key == GLUT_KEY_F1){
+        if(help == 1) { help = 0; } else { help = 1;}
+    }
+}
+void draw_help() {
+
+	GLfloat ones[] = { 1, 1, 1, 1 };
+				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ones);
+				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ones);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, help_tex);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0);
+	glVertex3f(0, 0, 0);
+	glTexCoord2f(1, 0);
+	glVertex3f(WINDOW_WIDTH, 0, 0);
+	glTexCoord2f(1, 1);
+	glVertex3f(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+	glTexCoord2f(0, 1);
+	glVertex3f(0, WINDOW_HEIGHT, 0);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	reshape(WINDOW_WIDTH, WINDOW_HEIGHT);
+	glutSwapBuffers();
+}
+void idle()
+{
+	glutPostRedisplay();
 }
