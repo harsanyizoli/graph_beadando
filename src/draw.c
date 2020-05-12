@@ -92,17 +92,3 @@ void draw_model(const struct Model* model)
     draw_triangles(model);
     draw_quads(model);
 }
-
-void draw_obj(const Object* obj){
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glTranslatef(obj->position.x, obj->position.y, obj->position.z);
-    glRotatef(obj->rotatex, 1.0, 0.0f, 0.0f);
-    glRotatef(obj->rotatey, 0.0f, 1.0f, 0.0f);
-    glRotatef(obj->rotatez, 0.0f, 0.0f, 1.0f);
-    glScalef(obj->scale, obj->scale, obj->scale);
-    draw_triangles(obj->m);
-    draw_quads(obj->m);
-    glPopMatrix();
-}
-

@@ -2,13 +2,13 @@
 #define CAMERA_H
 
 #include "common.h"
-
+#include "util.h"
 struct Camera
 {
-    pos3 Position;
-    pos3 Front;
-    pos3 Right;
-    pos3 Up;
+    vec3f Position;
+    vec3f Front;
+    vec3f Right;
+    vec3f Up;
     float Yaw;
     float Pitch;
     float MovementSpeed;

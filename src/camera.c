@@ -6,7 +6,7 @@
     }*/
 void init_cam(struct Camera* c){
     c->Position.x = 0.0f;
-    c->Position.y = 2.0f;
+    c->Position.y = 5.0f;
     c->Position.z = -3.0f;
     c->Front.x = 0.0f;
     c->Front.y = 0.0f;
@@ -17,7 +17,7 @@ void init_cam(struct Camera* c){
     c->Right.x = -1.0f;
     c->Right.y = 0.0f;
     c->Right.z = 0.0f;
-    c->MovementSpeed = 3.0f;
+    c->MovementSpeed = 7.0f;
     c->MouseSensitivity = 0.05f;
     c->Yaw = 90.0f;
     c->Zoom = 1.0f;
@@ -38,14 +38,16 @@ void process_key(struct Camera* c, Camera_movement direction, float delta)
         c->Position.z -= c->Front.z * velocity;
         }
     if (direction == LEFT){
-        c->Position.x -= c->Right.x * velocity;
+        process_mouse_movement(c, -30, 0);
+        //c->Position.x -= c->Right.x * velocity;
         //c->Position.y -= c->Right.y * velocity;
-        c->Position.z -= c->Right.z * velocity;
+        //c->Position.z -= c->Right.z * velocity;
     }
     if (direction == RIGHT){
-        c->Position.x += c->Right.x * velocity;
+        process_mouse_movement(c, 30, 0);
+        //c->Position.x += c->Right.x * velocity;
         //c->Position.y += c->Right.y * velocity;
-        c->Position.z += c->Right.z * velocity;
+        //c->Position.z += c->Right.z * velocity;
     }
 }
 float degree_to_radian(float degree){
@@ -59,7 +61,7 @@ void set_view_point(const struct Camera* c){
     //printf("looakt front x: %f, y: %f, z: %f\n", c->Front.x, c->Front.y, c->Front.z);
 	gluLookAt(
         c->Position.x, c->Position.y, c->Position.z, // eye
-        c->Position.x + c->Front.x, c->Position.y + c->Front.y, c->Position.z + c->Front.z, // look at
+        c->Position.x + c->Front.x, 4.0f, c->Position.z + c->Front.z, // look at
         0.0, 1.0, 0.0  // up
     );
     glutPostRedisplay();
@@ -69,7 +71,7 @@ void set_view_point(const struct Camera* c){
 
     void process_mouse_movement(struct Camera* c, float xoffset, float yoffset)
     {
-        pos3 f;
+        vec3f f;
         //printf("-------------------\nxoffset: %f, yoffset: %f\n", xoffset, yoffset);
 
         xoffset *= c->MouseSensitivity;
@@ -89,8 +91,8 @@ void set_view_point(const struct Camera* c){
         f.y = sin(degree_to_radian(c->Pitch));
         f.z = sin(degree_to_radian(c->Yaw)) * cos(degree_to_radian(c->Pitch));
 
-        c->Front = normalize_pos3(f);
-        c->Right = normalize_pos3(cross_pos3(c->Front, c->Up));
+        c->Front = normalize_vec3f(f);
+        c->Right = normalize_vec3f(cross_vec3f(c->Front, c->Up));
         // Make sure that when pitch is out of bounds, screen doesn't get flipped
 
         // Update Front, Right and Up Vectors using the updated Euler angles

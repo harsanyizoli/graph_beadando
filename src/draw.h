@@ -18,6 +18,5 @@ void draw_triangles(const struct Model* model);
  */
 void draw_quads(const struct Model* model);
 
-void draw_obj(const Object* obj);
 #endif // DRAW_H
 
