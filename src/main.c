@@ -1,56 +1,45 @@
 #include "common.h"
 
 const float VIEWPORT_RATIO = 16/9.f;
-const float VIEWPORT_ASPECT = 100.f;
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
 
-uint8_t keys_pressed[256];
-float last_frame, curr_frame, delta_time;
 struct Camera cam;
 struct timespec start;
-GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0};
+struct World world;
 
-vec3f player_pos = {0.0f, 0.f, 0.0f};
-vec3f ball_pos = {0.0f, 1.0f, 0.0f};
-vec3f add = {0.0f, 0.0f, 0.0f};
-uint8_t nohit = 0;
-
-Model m_car;
-Pixel* car_img, *help_img;
-GLuint car_tex, help_tex, floor_tex, ball_tex;
+uint8_t keys_pressed[256];
+Pixel* help_img, *floor_image;
+GLuint help_tex, floor_tex;
 uint8_t help = 0;
+float last_frame, curr_frame, delta_time;
 
 void initialize();
 void update(float dt);
 void specialFunc(int key, int x, int y);
 void idle();
 void update(float dt){
-    player_pos = add_vec3f(cam.Position, mult_vec3f(cam.Front, 2.0f));
-    vec3f pp = {player_pos.x, 0.0f, player_pos.z};
-    vec3f dif = sub_vec3f(ball_pos, pp);
+    world.car->car_pos = add_vec3f(cam.Position, mult_vec3f(cam.Front, 2.0f));
+    vec3f pp = {world.car->car_pos.x, 0.0f, world.car->car_pos.z};
+    vec3f dif = sub_vec3f(world.ball->ball_pos, pp);
     float len = sqrtf(dif.x * dif.x + dif.y * dif.y + dif.z * dif.z);
-    if(len < 2 && nohit == 0){
-        float ballspeed = cam.MovementSpeed;
-        if(cam.MovementSpeed == 10.0f){
-            ballspeed = 5.0f;
-        }
+    if(len < 2 && world.ball->nohit == 0){
         vec3f camxz = {cam.Front.x * cam.MovementSpeed*3.f, 10.0f, cam.Front.z * cam.MovementSpeed *3.f};
-        add = add_vec3f(add, camxz);
-        nohit = 1;
+        world.ball->add = add_vec3f(world.ball->add, camxz);
+        world.ball->nohit = 1;
     } else if (len > 2){
-        nohit = 0;
+        world.ball->nohit = 0;
     }
-    add.y -= 10.0f * dt;
-    ball_pos = add_vec3f(ball_pos, mult_vec3f(add, dt));
-    add = sub_vec3f(add, mult_vec3f(add, dt));
+    world.ball->add.y -= 10.0f * dt;
+    world.ball->ball_pos = add_vec3f(world.ball->ball_pos, mult_vec3f(world.ball->add, dt));
+    world.ball->add = sub_vec3f(world.ball->add, mult_vec3f(world.ball->add, dt));
     //ball_pos.y -= 10.f * dt;
-    if(ball_pos.y < 1) { 
-        add.y = -add.y;
-        ball_pos.y = 1.0f;
+    if(world.ball->ball_pos.y < 1) { 
+        world.ball->add.y = -world.ball->add.y;
+        world.ball->ball_pos.y = 1.0f;
     }
-    if(abs(ball_pos.x) > 19.f) add.x = -add.x;
-    if(abs(ball_pos.z) > 19.f) add.z = -add.z;
+    if(abs(world.ball->ball_pos.x) > 19.f) world.ball->add.x = -world.ball->add.x;
+    if(abs(world.ball->ball_pos.z) > 19.f) world.ball->add.z = -world.ball->add.z;
 
 }
 int main(int argc, char *argv[])
@@ -59,19 +48,16 @@ int main(int argc, char *argv[])
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);     
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    int window = glutCreateWindow("cancer.exe");
+    int window = glutCreateWindow("game.exe");
     glutSetWindow(window);
 
+    init_world(&world);
     initialize();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
-    Pixel* floor_image, *ball_image;
     floor_tex = load_texture("assets/floor.png", floor_image);
-    ball_tex = load_texture("assets/ehe.png", ball_image);
-    load_model("assets/red.obj", &m_car);
     //scale_model(&m_car, 0.5f, 0.5f, 0.5f);
     help_tex = load_texture("assets/help.png", help_img);
-    car_tex = load_texture("assets/red.png", car_img);
     glutMainLoop();
     return 0;
 }
@@ -109,12 +95,12 @@ void apply_actions(){
     if(keys_pressed[27] == 1)
         exit(0);
     if(keys_pressed['t'] == 1){
-        if (light_ambient[0] < 1)
-			light_ambient[0] = light_ambient[1] = light_ambient[2] += 0.01;
+        if (world.light->ambient < 1)
+			world.light->ambient += 0.01;
     }
     if(keys_pressed['y'] == 1){
-       if (light_ambient[0] > -0.51)
-			light_ambient[0] = light_ambient[1] = light_ambient[2] -= 0.01;
+       if (world.light->ambient > -0.51)
+			world.light->ambient -= 0.01;
     }
         /*
     if(keys_pressed['u'] == 1){
@@ -165,7 +151,7 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 1000.0);
+    gluPerspective(100.f, VIEWPORT_RATIO, 0.01, 1000.0);
     curr_frame = get_delta_since_start(start);
     //printf("run time: %f ", curr_frame);
     delta_time = curr_frame - last_frame;
@@ -177,7 +163,8 @@ void display()
     set_view_point(&cam);
     apply_actions();
     GLUquadric* a = gluNewQuadric();
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_ambient);
+    GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, world.light->ambient};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
 
     //Light
     GLfloat lightColor0[] = {0.9f, 0.9f, 0.9f, 1.0f};
@@ -185,8 +172,8 @@ void display()
     glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor0);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor0);
     glLightfv(GL_LIGHT1, GL_POSITION, lightPos0);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, light_ambient);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, ambient);
     glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
     GLfloat spot_direction[] = { 0.0, -1.0, 0.0 };
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction);
@@ -203,12 +190,12 @@ void display()
     glEnable(GL_LIGHT1);
 
     glPushMatrix();
-    glTranslatef(ball_pos.x, ball_pos.y, ball_pos.z);
+    glTranslatef(world.ball->ball_pos.x, world.ball->ball_pos.y, world.ball->ball_pos.z);
     glRotatef(cosf(curr_frame), 1.0f, 3.0f, -2.0f);
     gluQuadricDrawStyle(a, GLU_FILL);
     gluQuadricNormals(a, GLU_SMOOTH);
     gluQuadricTexture(a, GL_TRUE);
-    glBindTexture(GL_TEXTURE_2D, ball_tex);
+    glBindTexture(GL_TEXTURE_2D, world.ball->ball_tex);
     glEnable(GL_TEXTURE_2D);
     gluSphere(a, 1.0, 16.0, 16.0);
     glDisable(GL_TEXTURE_2D);
@@ -238,11 +225,11 @@ void display()
     glPopMatrix();
     glPushMatrix();
     glPopMatrix();
-        glTranslatef(player_pos.x, 0.0f, player_pos.z);
+        glTranslatef(world.car->car_pos.x, 0.0f, world.car->car_pos.z);
         glRotatef(-1*cam.Yaw-90.f, 0.0f, 1.0f, 0.0f);
-        glBindTexture(GL_TEXTURE_2D, car_tex);
+        glBindTexture(GL_TEXTURE_2D, world.car->car_tex);
         glEnable(GL_TEXTURE_2D);
-        draw_model(&m_car);
+        draw_model(world.car->m_car);
         glDisable(GL_TEXTURE_2D);
     glutSwapBuffers();
     }
@@ -252,7 +239,6 @@ void initialize()
     clock_gettime(CLOCK_REALTIME, &start);
     memset(keys_pressed, 0, 256);
     init_cam(&cam);
-    player_pos = cam.Position;
     glutKeyboardFunc(keyboard_down_handler);
     glutKeyboardUpFunc(keyboard_up_handler);
     glutMouseFunc(mouse_handler);
@@ -268,12 +254,13 @@ void initialize()
     glClearColor(0.15, 0.01, 0.4, 1.0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, light_ambient);
+    GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, world.light->ambient};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ambient);
 	glEnable(GL_LIGHTING);
     glClearDepth(1.0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 1000.0);
+    gluPerspective(100.f, VIEWPORT_RATIO, 0.01, 1000.0);
 }
 
 void specialFunc(int key, int x, int y){
