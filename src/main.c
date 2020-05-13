@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <math.h>
-
 #include "common.h"
-#include "camera.h"
-#include "util.h"
-#include "draw.h"
-#include "model.h" 
 
 const float VIEWPORT_RATIO = 16/9.f;
 const float VIEWPORT_ASPECT = 100.f;
@@ -13,18 +6,10 @@ const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
 
 uint8_t keys_pressed[256];
-float last_frame, curr_frame;
-float delta_time;
+float last_frame, curr_frame, delta_time;
 struct Camera cam;
 struct timespec start;
-int mouse_x = WINDOW_WIDTH / 2;
-int mouse_y = WINDOW_HEIGHT / 2;
-GLuint floor_tex, ball_tex;
-
-GLfloat light_position[] = {0.0f, 9.0f, 0.0f, 1.0f};
 GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0};
-GLfloat light_diffuse[] = { 1, 1, 1, 1 };
-GLfloat light_specular[] = { 1, 1, 1, 1 };
 
 vec3f player_pos = {0.0f, 0.f, 0.0f};
 vec3f ball_pos = {0.0f, 1.0f, 0.0f};
@@ -32,15 +17,14 @@ vec3f add = {0.0f, 0.0f, 0.0f};
 uint8_t nohit = 0;
 
 Model m_car;
-Pixel* car_img;
-GLuint car_tex;
-Pixel* help_img;
-GLuint help_tex;
+Pixel* car_img, *help_img;
+GLuint car_tex, help_tex, floor_tex, ball_tex;
 uint8_t help = 0;
 
 void initialize();
 void update(float dt);
 void specialFunc(int key, int x, int y);
+void idle();
 void update(float dt){
     player_pos = add_vec3f(cam.Position, mult_vec3f(cam.Front, 2.0f));
     vec3f pp = {player_pos.x, 0.0f, player_pos.z};
@@ -149,15 +133,6 @@ void apply_actions(){
 int changex, changey;
 int warped = 1;
 void mouse_motion_handler(int x, int y){
-	    changex = x - WINDOW_WIDTH/2;
-	    changey = WINDOW_HEIGHT/2 - y;
-    
-        if(changex != 0 || changey != 0){
-	        mouse_x = x;
-	        mouse_y = y;
-	        //process_mouse_movement(&cam, changex, changey);
-            glutWarpPointer(WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2);
-        }
 }
 
 void reshape(GLsizei width, GLsizei height)

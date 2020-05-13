@@ -1,6 +1,6 @@
 CXX := gcc
 TARGET := beadando
-LDFLAGS :=-lSOIL -lGL -lGLU -lglut -lm
+LDFLAGS := -lGL -lGLU -lglut -lm -lSOIL
 INCLUDE := -I$(shell pwd)/include/
 CXXFLAGS :=
 SRC	:= src/*.c

@@ -2,7 +2,7 @@
 #define MODEL_H
 
 #include <stdio.h>
-
+#include "common.h"
 #define TRUE 1
 #define FALSE 0
 

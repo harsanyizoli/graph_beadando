@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "util.h"
+
 struct Camera
 {
     vec3f Position;

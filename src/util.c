@@ -1,9 +1,5 @@
 #include "util.h"
 
-void print_time(struct timeval start_time, struct timeval t){
-
-}
-
 float get_delta_since_start(struct timespec start){
     struct timespec curr;
     clock_gettime(CLOCK_REALTIME, &curr);
