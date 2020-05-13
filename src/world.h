@@ -21,12 +21,24 @@ struct Light {
     vec3f pos;
     float ambient;
 };
+struct Floor {
+    uint8_t size;
+    Pixel* floor_img;
+    GLuint floor_tex;
+};
 
 struct World {
     struct Car *car;
     struct Ball *ball;
     struct Light *light;
+    struct Floor* floor;
 };
 
+struct Help {
+    Pixel* help_img;
+    GLuint help_tex;
+    uint8_t on;
+};
 void init_world(struct World *w);
+void init_help(struct Help *help);
 #endif // !world_h

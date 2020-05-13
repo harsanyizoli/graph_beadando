@@ -27,4 +27,13 @@ void init_world(struct World *w){
     w->light->pos.y = 20.0f;
     w->light->pos.z = 0.0f;
     w->light->ambient = 0.5f;
+
+    w->floor = (struct Floor*)malloc(sizeof(struct Floor));
+    w->floor->floor_tex = load_texture("assets/grass14.png", w->floor->floor_img);
+    w->floor->size = 20;
+}
+
+void init_help(struct Help *help){
+    help->help_tex = load_texture("assets/help.png", help->help_img);
+    help->on = 0;
 }

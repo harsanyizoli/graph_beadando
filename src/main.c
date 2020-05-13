@@ -7,11 +7,8 @@ const int WINDOW_HEIGHT = 900;
 struct Camera cam;
 struct timespec start;
 struct World world;
-
+struct Help help;
 uint8_t keys_pressed[256];
-Pixel* help_img, *floor_image;
-GLuint help_tex, floor_tex;
-uint8_t help = 0;
 float last_frame, curr_frame, delta_time;
 
 void initialize();
@@ -52,12 +49,11 @@ int main(int argc, char *argv[])
     glutSetWindow(window);
 
     init_world(&world);
+    init_help(&help);
     initialize();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
-    floor_tex = load_texture("assets/floor.png", floor_image);
     //scale_model(&m_car, 0.5f, 0.5f, 0.5f);
-    help_tex = load_texture("assets/help.png", help_img);
     glutMainLoop();
     return 0;
 }
@@ -145,7 +141,7 @@ void reshape(GLsizei width, GLsizei height)
 
 void display()
 {   
-    if(help == 1){
+    if(help.on == 1){
         draw_help();
     } else {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -190,6 +186,32 @@ void display()
     glEnable(GL_LIGHT1);
 
     glPushMatrix();
+    glBindTexture(GL_TEXTURE_2D, world.floor->floor_tex);
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0f, 20.0f);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glColor3f(0.5f, 0.05f, 0.2f);
+    glVertex3f(-20.0f, 0.0f, 20.0f);
+
+    glTexCoord2f(0.f, 0.f);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glColor3f(0.5f, 0.05f, 0.2f);
+    glVertex3f(-20.0f, 0.0f, -20.0f);
+ 
+    glTexCoord2f(20.f, 20.f);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glColor3f(0.5f, 0.05f, 0.2f);
+    glVertex3f(20.0f, 0.0f, -20.0f);
+
+    glTexCoord2f(20.0f, 0.f);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glColor3f(0.5f, 0.05f, 0.2f);
+    glVertex3f(20.0f, 0.0f, 20.0f);
+    glDisable(GL_TEXTURE_2D);
+    glEnd();
+    glPopMatrix();
+    glPushMatrix();
     glTranslatef(world.ball->ball_pos.x, world.ball->ball_pos.y, world.ball->ball_pos.z);
     glRotatef(cosf(curr_frame), 1.0f, 3.0f, -2.0f);
     gluQuadricDrawStyle(a, GLU_FILL);
@@ -201,28 +223,6 @@ void display()
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
     //render ground
-    glPushMatrix();
-    glBindTexture(GL_TEXTURE_2D, floor_tex);
-    glEnable(GL_TEXTURE_2D);
-    glBegin(GL_POLYGON);
-    glTexCoord2f(10.0f, 10.0f);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(20.0f, 0.0f, 20.0f);
-
-    glTexCoord2f(10.0f, 0.f);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-20.0f, 0.0f, 20.0f);
- 
-    glTexCoord2f(0.f, 0.f);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-20.0f, 0.0f, -20.0f);
-
-    glTexCoord2f(0.0f, 10.0f);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(20.0f, 0.0f, -20.0f);
-    glDisable(GL_TEXTURE_2D);
-    glEnd();
-    glPopMatrix();
     glPushMatrix();
     glPopMatrix();
         glTranslatef(world.car->car_pos.x, 0.0f, world.car->car_pos.z);
@@ -264,9 +264,8 @@ void initialize()
 }
 
 void specialFunc(int key, int x, int y){
-    printf("%d", key);
     if(key == GLUT_KEY_F1){
-        if(help == 1) { help = 0; } else { help = 1;}
+        if(help.on == 1) { help.on = 0; } else { help.on = 1;}
     }
 }
 void draw_help() {
@@ -282,7 +281,7 @@ void draw_help() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, help_tex);
+	glBindTexture(GL_TEXTURE_2D, help.help_tex);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0, 0);
 	glVertex3f(0, 0, 0);
