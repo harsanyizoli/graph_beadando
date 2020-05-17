@@ -161,15 +161,16 @@ void display()
     GLUquadric* a = gluNewQuadric();
     GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, world.light->ambient};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
-
-    //Light
-    GLfloat lightColor0[] = {0.9f, 0.9f, 0.9f, 1.0f};
-    GLfloat lightPos0[] = {0.0f, 30.0f, 0.0f, 1};
-    glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor0);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor0);
-    glLightfv(GL_LIGHT1, GL_POSITION, lightPos0);
     glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
     glMaterialfv(GL_FRONT, GL_SPECULAR, ambient);
+    GLfloat lightPos0[] = {5.0f, 1.0f, 5.0f, 1};
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPos0);
+    glEnable(GL_LIGHT1);
+    /*
+    //Light
+    GLfloat lightColor0[] = {0.9f, 0.9f, 0.9f, 1.0f};
+    glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor0);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor0);
     glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
     GLfloat spot_direction[] = { 0.0, -1.0, 0.0 };
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction);
@@ -181,9 +182,8 @@ void display()
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mcolor);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mcolor);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
-    
+    */
     //printf("frame time: %f\n", delta_time);
-    glEnable(GL_LIGHT1);
 
     glPushMatrix();
     glBindTexture(GL_TEXTURE_2D, world.floor->floor_tex);
@@ -208,7 +208,13 @@ void display()
     glNormal3f(0.0f, 1.0f, 0.0f);
     glColor3f(0.5f, 0.05f, 0.2f);
     glVertex3f(20.0f, 0.0f, 20.0f);
+    //
+    glEnd();
     glDisable(GL_TEXTURE_2D);
+    glBegin(GL_LINES);
+
+    //glVertex3f(0.f, 0.f, 0.0f);
+    //glVertex3f(0.f, 2.f, 0.0f);
     glEnd();
     glPopMatrix();
     glPushMatrix();

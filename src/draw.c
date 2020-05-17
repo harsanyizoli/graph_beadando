@@ -91,4 +91,5 @@ void draw_model(const struct Model* model)
 {
     draw_triangles(model);
     draw_quads(model);
+    //draw_normals(model, 1.0);
 }
