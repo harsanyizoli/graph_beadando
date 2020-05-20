@@ -159,13 +159,10 @@ void display()
     set_view_point(&cam);
     apply_actions();
     GLUquadric* a = gluNewQuadric();
-    GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, world.light->ambient};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, ambient);
-    GLfloat lightPos0[] = {5.0f, 1.0f, 5.0f, 1};
-    glLightfv(GL_LIGHT1, GL_POSITION, lightPos0);
-    glEnable(GL_LIGHT1);
+    GLfloat light_position[] = {0, 5, 0, 0.0};
+    GLfloat light_color[] = {0, 1, 0, 1};
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, light_color);;
     /*
     //Light
     GLfloat lightColor0[] = {0.9f, 0.9f, 0.9f, 1.0f};
@@ -261,8 +258,8 @@ void initialize()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
     GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, world.light->ambient};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ambient);
 	glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
     glClearDepth(1.0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
