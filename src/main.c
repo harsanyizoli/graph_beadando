@@ -48,11 +48,11 @@ int main(int argc, char *argv[])
     int window = glutCreateWindow("game.exe");
     glutSetWindow(window);
 
-    init_world(&world);
     init_help(&help);
+    init_world(&world);
     initialize();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     //scale_model(&m_car, 0.5f, 0.5f, 0.5f);
     glutMainLoop();
     return 0;
@@ -159,29 +159,18 @@ void display()
     set_view_point(&cam);
     apply_actions();
     GLUquadric* a = gluNewQuadric();
-    GLfloat light_position[] = {0, 5, 0, 0.0};
-    GLfloat light_color[] = {0, 1, 0, 1};
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, light_color);;
-    /*
     //Light
-    GLfloat lightColor0[] = {0.9f, 0.9f, 0.9f, 1.0f};
-    glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor0);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor0);
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
-    GLfloat spot_direction[] = { 0.0, -1.0, 0.0 };
-    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction);
-    glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 2.0);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0);
-    
-    //Material
-    GLfloat mcolor[] = {0.8, 0.1, 0.8, 1.0};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mcolor);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mcolor);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
-    */
-    //printf("frame time: %f\n", delta_time);
 
+    GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, world.light->ambient};
+    GLfloat lightPos[] = {world.light->pos.x, world.light->pos.y, world.light->pos.z, 1.0f};
+    GLfloat ones[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPos);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, ones);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, ones);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, ambient);
+
+	glEnable(GL_LIGHT1);
     glPushMatrix();
     glBindTexture(GL_TEXTURE_2D, world.floor->floor_tex);
     glEnable(GL_TEXTURE_2D);
@@ -229,6 +218,7 @@ void display()
     glPushMatrix();
     glPopMatrix();
         glTranslatef(world.car->car_pos.x, 0.0f, world.car->car_pos.z);
+        glRotatef(180.f, 0.0f, 1.0f, 0.0f);
         glRotatef(-1*cam.Yaw-90.f, 0.0f, 1.0f, 0.0f);
         glBindTexture(GL_TEXTURE_2D, world.car->car_tex);
         glEnable(GL_TEXTURE_2D);
@@ -257,10 +247,11 @@ void initialize()
     glClearColor(0.15, 0.01, 0.4, 1.0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
-    GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, world.light->ambient};
 	glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
     glClearDepth(1.0);
+    GLfloat ambient[4] = {world.light->ambient, world.light->ambient, world.light->ambient, 1.0f};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ambient);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(100.f, VIEWPORT_RATIO, 0.01, 1000.0);
@@ -273,9 +264,9 @@ void specialFunc(int key, int x, int y){
 }
 void draw_help() {
 
-	GLfloat ones[] = { 1, 1, 1, 1 };
-				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ones);
-				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ones);
+	GLfloat ones[] = { 0.1f, 0.8f, 0.8f, 0.8f };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ones);
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ones);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

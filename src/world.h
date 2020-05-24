@@ -19,7 +19,7 @@ struct Ball {
 
 struct Light {
     vec3f pos;
-    float ambient;
+    float ambient;   
 };
 struct Floor {
     uint8_t size;
